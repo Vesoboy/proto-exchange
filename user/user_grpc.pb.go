@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.2
-// source: user.proto
+// source: user/user.proto
 
 package user
 
@@ -19,9 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExchangeService_GetExchangeRates_FullMethodName           = "/user.ExchangeService/GetExchangeRates"
-	ExchangeService_GetExchangeRateForCurrency_FullMethodName = "/user.ExchangeService/GetExchangeRateForCurrency"
-	ExchangeService_ExchangeCurrency_FullMethodName           = "/user.ExchangeService/ExchangeCurrency"
+	ExchangeService_GetExchangeRates_FullMethodName = "/user.ExchangeService/GetExchangeRates"
+	ExchangeService_ExchangeCurrency_FullMethodName = "/user.ExchangeService/ExchangeCurrency"
 )
 
 // ExchangeServiceClient is the client API for ExchangeService service.
@@ -31,9 +30,7 @@ const (
 // Определение сервиса
 type ExchangeServiceClient interface {
 	// Получение курсов обмена всех валют
-	GetExchangeRates(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ExchangeRatesResponse, error)
-	// Получение курса обмена для конкретной валюты
-	GetExchangeRateForCurrency(ctx context.Context, in *CurrencyRequest, opts ...grpc.CallOption) (*ExchangeRateResponse, error)
+	GetExchangeRates(ctx context.Context, in *RatesRequest, opts ...grpc.CallOption) (*ExchangeRatesResponse, error)
 	// Обмен валют
 	ExchangeCurrency(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
@@ -46,20 +43,10 @@ func NewExchangeServiceClient(cc grpc.ClientConnInterface) ExchangeServiceClient
 	return &exchangeServiceClient{cc}
 }
 
-func (c *exchangeServiceClient) GetExchangeRates(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*ExchangeRatesResponse, error) {
+func (c *exchangeServiceClient) GetExchangeRates(ctx context.Context, in *RatesRequest, opts ...grpc.CallOption) (*ExchangeRatesResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ExchangeRatesResponse)
 	err := c.cc.Invoke(ctx, ExchangeService_GetExchangeRates_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *exchangeServiceClient) GetExchangeRateForCurrency(ctx context.Context, in *CurrencyRequest, opts ...grpc.CallOption) (*ExchangeRateResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ExchangeRateResponse)
-	err := c.cc.Invoke(ctx, ExchangeService_GetExchangeRateForCurrency_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +70,7 @@ func (c *exchangeServiceClient) ExchangeCurrency(ctx context.Context, in *Exchan
 // Определение сервиса
 type ExchangeServiceServer interface {
 	// Получение курсов обмена всех валют
-	GetExchangeRates(context.Context, *Empty) (*ExchangeRatesResponse, error)
-	// Получение курса обмена для конкретной валюты
-	GetExchangeRateForCurrency(context.Context, *CurrencyRequest) (*ExchangeRateResponse, error)
+	GetExchangeRates(context.Context, *RatesRequest) (*ExchangeRatesResponse, error)
 	// Обмен валют
 	ExchangeCurrency(context.Context, *ExchangeRequest) (*TransactionResponse, error)
 	mustEmbedUnimplementedExchangeServiceServer()
@@ -98,11 +83,8 @@ type ExchangeServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedExchangeServiceServer struct{}
 
-func (UnimplementedExchangeServiceServer) GetExchangeRates(context.Context, *Empty) (*ExchangeRatesResponse, error) {
+func (UnimplementedExchangeServiceServer) GetExchangeRates(context.Context, *RatesRequest) (*ExchangeRatesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetExchangeRates not implemented")
-}
-func (UnimplementedExchangeServiceServer) GetExchangeRateForCurrency(context.Context, *CurrencyRequest) (*ExchangeRateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetExchangeRateForCurrency not implemented")
 }
 func (UnimplementedExchangeServiceServer) ExchangeCurrency(context.Context, *ExchangeRequest) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExchangeCurrency not implemented")
@@ -129,7 +111,7 @@ func RegisterExchangeServiceServer(s grpc.ServiceRegistrar, srv ExchangeServiceS
 }
 
 func _ExchangeService_GetExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(RatesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -141,25 +123,7 @@ func _ExchangeService_GetExchangeRates_Handler(srv interface{}, ctx context.Cont
 		FullMethod: ExchangeService_GetExchangeRates_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExchangeServiceServer).GetExchangeRates(ctx, req.(*Empty))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ExchangeService_GetExchangeRateForCurrency_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CurrencyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ExchangeServiceServer).GetExchangeRateForCurrency(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: ExchangeService_GetExchangeRateForCurrency_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ExchangeServiceServer).GetExchangeRateForCurrency(ctx, req.(*CurrencyRequest))
+		return srv.(ExchangeServiceServer).GetExchangeRates(ctx, req.(*RatesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -194,16 +158,12 @@ var ExchangeService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ExchangeService_GetExchangeRates_Handler,
 		},
 		{
-			MethodName: "GetExchangeRateForCurrency",
-			Handler:    _ExchangeService_GetExchangeRateForCurrency_Handler,
-		},
-		{
 			MethodName: "ExchangeCurrency",
 			Handler:    _ExchangeService_ExchangeCurrency_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "user/user.proto",
 }
 
 const (
@@ -351,7 +311,7 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "user/user.proto",
 }
 
 const (
@@ -369,9 +329,9 @@ type FinancialServiceClient interface {
 	// Получение баланса пользователя
 	GetBalance(ctx context.Context, in *GetBalanceRequest, opts ...grpc.CallOption) (*BalanceResponse, error)
 	// Пополнение счета
-	Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
+	Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*WithdrawDepositResponse, error)
 	// Вывод средств
-	Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
+	Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*WithdrawDepositResponse, error)
 }
 
 type financialServiceClient struct {
@@ -392,9 +352,9 @@ func (c *financialServiceClient) GetBalance(ctx context.Context, in *GetBalanceR
 	return out, nil
 }
 
-func (c *financialServiceClient) Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*TransactionResponse, error) {
+func (c *financialServiceClient) Deposit(ctx context.Context, in *DepositRequest, opts ...grpc.CallOption) (*WithdrawDepositResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TransactionResponse)
+	out := new(WithdrawDepositResponse)
 	err := c.cc.Invoke(ctx, FinancialService_Deposit_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -402,9 +362,9 @@ func (c *financialServiceClient) Deposit(ctx context.Context, in *DepositRequest
 	return out, nil
 }
 
-func (c *financialServiceClient) Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*TransactionResponse, error) {
+func (c *financialServiceClient) Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*WithdrawDepositResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TransactionResponse)
+	out := new(WithdrawDepositResponse)
 	err := c.cc.Invoke(ctx, FinancialService_Withdraw_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -421,9 +381,9 @@ type FinancialServiceServer interface {
 	// Получение баланса пользователя
 	GetBalance(context.Context, *GetBalanceRequest) (*BalanceResponse, error)
 	// Пополнение счета
-	Deposit(context.Context, *DepositRequest) (*TransactionResponse, error)
+	Deposit(context.Context, *DepositRequest) (*WithdrawDepositResponse, error)
 	// Вывод средств
-	Withdraw(context.Context, *WithdrawRequest) (*TransactionResponse, error)
+	Withdraw(context.Context, *WithdrawRequest) (*WithdrawDepositResponse, error)
 	mustEmbedUnimplementedFinancialServiceServer()
 }
 
@@ -437,10 +397,10 @@ type UnimplementedFinancialServiceServer struct{}
 func (UnimplementedFinancialServiceServer) GetBalance(context.Context, *GetBalanceRequest) (*BalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBalance not implemented")
 }
-func (UnimplementedFinancialServiceServer) Deposit(context.Context, *DepositRequest) (*TransactionResponse, error) {
+func (UnimplementedFinancialServiceServer) Deposit(context.Context, *DepositRequest) (*WithdrawDepositResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deposit not implemented")
 }
-func (UnimplementedFinancialServiceServer) Withdraw(context.Context, *WithdrawRequest) (*TransactionResponse, error) {
+func (UnimplementedFinancialServiceServer) Withdraw(context.Context, *WithdrawRequest) (*WithdrawDepositResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Withdraw not implemented")
 }
 func (UnimplementedFinancialServiceServer) mustEmbedUnimplementedFinancialServiceServer() {}
@@ -539,5 +499,5 @@ var FinancialService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "user/user.proto",
 }

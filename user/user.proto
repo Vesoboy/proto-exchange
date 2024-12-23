@@ -2,15 +2,12 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "github.com/Vesoboy/proto-exchange;user";
+option go_package = "user/";
 
 // Определение сервиса
 service ExchangeService {
     // Получение курсов обмена всех валют
-    rpc GetExchangeRates(Empty) returns (ExchangeRatesResponse);
-    
-    // Получение курса обмена для конкретной валюты
-    rpc GetExchangeRateForCurrency(CurrencyRequest) returns (ExchangeRateResponse);
+    rpc GetExchangeRates(RatesRequest) returns (ExchangeRatesResponse);
 
     // Обмен валют
     rpc ExchangeCurrency(ExchangeRequest) returns (TransactionResponse);
@@ -30,10 +27,10 @@ service FinancialService {
     rpc GetBalance(GetBalanceRequest) returns (BalanceResponse);
     
     // Пополнение счета
-    rpc Deposit(DepositRequest) returns (TransactionResponse);
+    rpc Deposit(DepositRequest) returns (WithdrawDepositResponse);
 
     // Вывод средств
-    rpc Withdraw(WithdrawRequest) returns (TransactionResponse);
+    rpc Withdraw(WithdrawRequest) returns (WithdrawDepositResponse);
 }
 
 // Запрос для регистрации пользователя
@@ -57,19 +54,6 @@ message LoginRequest {
 // Ответ на запрос авторизации
 message LoginResponse {
     string token = 1; // JWT токен
-    string message = 2;
-}
-
-// Запрос на пополнение счета
-message DepositRequest {
-    string token = 1; // JWT токен
-    float amount = 2; // Сумма для пополнения
-}
-
-// Запрос на вывод средств
-message WithdrawRequest {
-    string token = 1; // JWT токен
-    float amount = 2; // Сумма для вывода
 }
 
 // Запрос на получение баланса пользователя
@@ -79,39 +63,52 @@ message GetBalanceRequest {
 
 // Ответ с балансом пользователя
 message BalanceResponse {
-    float balance = 1;
+    string message = 1;             //сообщение отчет
+    map<string, float> balance = 2; //баланс
 }
 
-// Запрос для получения курса обмена для конкретной валюты
-message CurrencyRequest {
-    string from_currency = 1;
-    string to_currency = 2;
+// Запрос на пополнение счета
+message DepositRequest {
+    string token = 1; // JWT токен
+    float amount = 2; // Сколько пополнить
+    string currency = 3; //RUB, USD, EUR
 }
 
-// Ответ с курсом обмена для конкретной валюты
-message ExchangeRateResponse {
-    string from_currency = 1;
-    string to_currency = 2;
-    float rate = 3;
+// Запрос на вывод средств
+message WithdrawRequest {
+    string token = 1; // JWT токен
+    float amount = 2; // Сумма для вывода
+    string currency = 3; //RUB, USD, EUR
 }
 
-// Ответ с курсами обмена всех валют
+// Ответ на обмен валюты
+message WithdrawDepositResponse {
+    string message = 1;
+    map<string, float> new_balance = 2;
+}
+
+// Запрос на получение курса валют
+message RatesRequest{
+    string token = 1; //токен авторизации
+}
+
+// Ответ с курсами всех валют
 message ExchangeRatesResponse {
-    map<string, float> rates = 1; // ключ: валюта, значение: курс
+    string message = 1; //Сообщение о курсе валют
+    map<string, float> rates = 2; // ключ: валюта, значение: курс
 }
 
-// Запрос на обмен валют
+// Запрос на обмен валюты
 message ExchangeRequest {
-    string from_currency = 1;
-    string to_currency = 2;
-    float amount = 3;
+    string token = 1;
+    string from_currency = 2;   //какую валюту менять
+    string to_currency = 3;     //на какую валюту менять
+    float amount = 4;           //сколько менять
 }
 
 // Ответ на обмен валюты
 message TransactionResponse {
-    string message = 1;
-    float new_balance = 2;
+    string message = 1;     //сообщение об операции
+    float amountFromTo = 2; //сколько получилось
+    map<string, float> balanceFromTo = 3; //получившийся баланс
 }
-
-// Пустое сообщение
-message Empty {}
