@@ -1,4 +1,4 @@
-module github.com/Vesoboy/proto-exchange
+module github.com/Vesoboy/proto-exchange/v2
 
 go 1.23.2
 
