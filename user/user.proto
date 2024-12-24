@@ -63,8 +63,7 @@ message GetBalanceRequest {
 
 // Ответ с балансом пользователя
 message BalanceResponse {
-    string message = 1;             //сообщение отчет
-    map<string, float> balance = 2; //баланс
+    map<string, float> balance = 1; //баланс
 }
 
 // Запрос на пополнение счета
